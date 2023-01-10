@@ -1,8 +1,8 @@
 import { Application, Sprite } from 'pixi.js';
-import { GAME_HIEGHT, GAME_WIDTH, HERO_STEP } from './const/const';
+import { GAME_HIEGHT, GAME_WIDTH } from './const/const';
 import { colors } from './const/colors';
 import { GHOST_URL } from './const/url';
-import { onKeyDown } from './utils/utils';
+import { gameLoop, keyDown, keyUp } from './utils/utils';
 
 const app = new Application({
   width: GAME_WIDTH,
@@ -22,4 +22,7 @@ console.log(hero.scale)
 
 app.stage.addChild(hero);
 
-document.body.addEventListener('keydown', (event) => onKeyDown(event, hero));
+document.body.addEventListener('keydown', keyDown);
+document.body.addEventListener('keyup', keyUp);
+
+app.ticker.add(() => gameLoop(hero));
