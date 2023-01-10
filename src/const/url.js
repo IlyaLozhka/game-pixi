@@ -1,0 +1,1 @@
+export const GHOST_URL = 'https://purepng.com/public/uploads/large/purepng.com-ghostghosthauntpoltergeistspiritghosts-17015277757374i8ek.png';
