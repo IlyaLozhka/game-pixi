@@ -1,7 +1,7 @@
-import { Application, Sprite, Texture, Rectangle, BaseTexture } from 'pixi.js';
+import { Application, Sprite, Texture, Rectangle, BaseTexture, TilingSprite } from 'pixi.js';
 import { GAME_HIEGHT, GAME_WIDTH, HERO_STEP } from './const/const';
 import { colors } from './const/colors';
-import { MAIN_SPRITE_URL } from './const/url';
+import { BACKGROUND_URL, MAIN_SPRITE_URL } from './const/url';
 
 const keys = {};
 const bullets = [];
@@ -16,6 +16,11 @@ document.getElementById('root').appendChild(app.view);
 
 const base = BaseTexture.from(MAIN_SPRITE_URL);// x start 328 y start 168 x end 440 y end 220  112/52
 base.setSize(512,3328);
+
+const background = BaseTexture.from(BACKGROUND_URL);
+background.setSize(GAME_WIDTH, GAME_HIEGHT);
+const backgroundSprite = TilingSprite.from(background, {width: GAME_WIDTH, height:GAME_HIEGHT});
+app.stage.addChild(backgroundSprite);
 
 const playerTexture = new Texture(base);
 const shipsShape = new Rectangle(64, 63, 130, 130)
@@ -54,13 +59,15 @@ document.body.addEventListener('keyup', fireBullet);
 
 
 const gameLoop = (object) => {
-  if (keys['37'] && object.position.x !== object.width) {
+  if (keys['37'] && object.position.x > object.width) {
     object.position.x -= HERO_STEP;
   }
-  if (keys['39'] && object.position.x !== GAME_WIDTH - object.width) {
+  if (keys['39'] && (object.position.x < GAME_WIDTH - object.width)) {
+
     object.position.x += HERO_STEP;
   }
   updateBullets();
+  updateBackground()
 };
 
 const createBullet = () => {
@@ -88,6 +95,10 @@ const updateBullets = () => {
     }
 
   }
+};
+
+const updateBackground = () => {
+  backgroundSprite.tilePosition.y += 1;
 };
 
 app.ticker.add(() => gameLoop(playerShip));
