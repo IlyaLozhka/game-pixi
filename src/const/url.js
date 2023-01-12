@@ -1,1 +1,1 @@
-export const GHOST_URL = 'https://purepng.com/public/uploads/large/purepng.com-ghostghosthauntpoltergeistspiritghosts-17015277757374i8ek.png';
+export const MAIN_SPRITE_URL = 'https://firebasestorage.googleapis.com/v0/b/react-native-app-8fc6d.appspot.com/o/space-ships.png?alt=media&token=30cd82b7-5c63-4bcd-a9f3-90402f348ba7';
