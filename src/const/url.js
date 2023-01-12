@@ -1,1 +1,2 @@
 export const MAIN_SPRITE_URL = 'https://firebasestorage.googleapis.com/v0/b/react-native-app-8fc6d.appspot.com/o/space-ships.png?alt=media&token=30cd82b7-5c63-4bcd-a9f3-90402f348ba7';
+export const BACKGROUND_URL = 'https://firebasestorage.googleapis.com/v0/b/react-native-app-8fc6d.appspot.com/o/background.png?alt=media&token=ee7a333f-af10-4d7d-b265-ff98fb15e7ca';
