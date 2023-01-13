@@ -1,14 +1,26 @@
-import { Application, Sprite, Texture, Rectangle, BaseTexture, TilingSprite } from 'pixi.js';
-import { GAME_HIEGHT, GAME_WIDTH, HERO_STEP } from './const/const';
+import {
+  Application,
+  Sprite,
+  Texture,
+  Rectangle,
+  BaseTexture,
+  TilingSprite,
+  Spritesheet,
+  AnimatedSprite,
+} from 'pixi.js';
+import { ALIENS_LIVES_NUMBERS, GAME_HIEGHT, GAME_WIDTH, HERO_STEP, LIVES_NUMBERS } from './const/const';
 import { colors } from './const/colors';
-import { BACKGROUND_URL, MAIN_SPRITE_URL } from './const/url';
+import { BACKGROUND_URL, HEARTS_URL, MAIN_SPRITE_URL } from './const/url';
 import { randomPosition } from './utils/randomPosition';
 import { collisionDetection } from './utils/collisionDetection';
+import { explosionAtlas } from './const/explosionAtlas';
 
 const keys = {};
 const bullets = [];
 const aliens = [];
 const aliensBullets = [];
+const lives = [];
+const explosionsAnimations = [];
 
 const app = new Application({
   width: GAME_WIDTH,
@@ -25,6 +37,30 @@ const background = BaseTexture.from(BACKGROUND_URL);
 background.setSize(GAME_WIDTH, GAME_HIEGHT);
 const backgroundSprite = TilingSprite.from(background, { width: GAME_WIDTH, height: GAME_HIEGHT });
 app.stage.addChild(backgroundSprite);
+
+const heart = BaseTexture.from(HEARTS_URL);
+heart.setSize(852, 238);
+
+const heartShape = new Rectangle(0, 0, 266, 230);
+const heartTexture = new Texture(heart);
+heartTexture.frame = heartShape;
+
+const setLives = (index) => {
+  const heartSprite = Sprite.from(heartTexture);
+  heartSprite.anchor.set(0.5);
+  heartSprite.width = heartTexture.width / 4;
+  heartSprite.height = heartTexture.height / 4;
+  heartSprite.x = heartSprite.width * index;
+  heartSprite.y = GAME_HIEGHT - heartSprite.height;
+  app.stage.addChild(heartSprite);
+  return heartSprite;
+};
+
+for (let i = 1; i < LIVES_NUMBERS + 1; i++) {
+  const live = setLives(i);
+  lives.push(live);
+}
+
 
 const playerTexture = new Texture(base);
 const shipsShape = new Rectangle(64, 63, 130, 130);
@@ -52,6 +88,9 @@ playerShip.y = app.view.height - playerShip.height;
 
 app.stage.addChild(playerShip);
 
+const spriteSheet = new Spritesheet(BaseTexture.from(explosionAtlas.meta.image), explosionAtlas);
+spriteSheet.parse().then((data) => console.log('loaded', data));
+
 const createAliens = () => {
   const aliensShip = Sprite.from(aliensTexture);
   aliensShip.width = aliensShipShape.width / 2;
@@ -61,6 +100,8 @@ const createAliens = () => {
   aliensShip.x = randomPosition(aliensShip.width, GAME_WIDTH - aliensShip.width);
   aliensShip.scale.y *= -1;
   aliensShip.dead = false;
+  aliensShip.passed = false;
+  aliensShip.lives = ALIENS_LIVES_NUMBERS;
   app.stage.addChild(aliensShip);
   return aliensShip;
 };
@@ -68,7 +109,7 @@ const createAliens = () => {
 setInterval(() => {
   let alien = createAliens();
   aliens.push(alien);
-}, 2000);
+}, 1500);
 
 setInterval(() => {
   for (let i = 0; i < aliens.length; i++) {
@@ -98,6 +139,7 @@ document.body.addEventListener('keyup', playerFires);
 
 
 const gameLoop = (object) => {
+  console.log(explosionsAnimations)
   if (keys['37'] && object.position.x > object.width) {
     object.position.x -= HERO_STEP;
   }
@@ -136,6 +178,22 @@ const createPlayerBullet = () => {
   return bullet;
 };
 
+const createExplosion = (object) => {
+  const explosionAnimation = new AnimatedSprite(spriteSheet.animations.explosion);
+  explosionAnimation.animationSpeed = 0.1666;
+  explosionAnimation.anchor.set(0.5);
+  explosionAnimation.x = object.position.x;
+  explosionAnimation.y = object.position.y;
+  explosionAnimation.loop = false;
+  explosionAnimation.play();
+  explosionAnimation.onComplete = () => {
+    app.stage.removeChild(explosionAnimation);
+    explosionsAnimations.pop();
+  }
+  app.stage.addChild(explosionAnimation);
+  explosionsAnimations.push(explosionAnimation);
+};
+
 const updatePlayerBullets = () => {
   for (let i = 0; i < bullets.length; i++) {
     bullets[i].position.y -= 10;
@@ -152,6 +210,7 @@ const updatePlayerBullets = () => {
       for (let k = 0; k < aliens.length; k++) {
         if (collisionDetection(bullets[i], aliens[k])) {
           app.stage.removeChild(bullets[i]);
+          aliens[k].lives -= 1;
           bullets.splice(i, 1);
           break;
         }
@@ -183,9 +242,20 @@ const updateAliensShips = () => {
   for (let i = 0; i < aliens.length; i++) {
     aliens[i].position.y += 2;
     if (aliens[i].position.y > GAME_HIEGHT + aliensShipShape.height / 2) {
+      aliens[i].passed = true;
+      continue;
+    }
+    if (aliens[i].lives === 0) {
       aliens[i].dead = true;
+      continue;
     }
     if (aliens[i].dead) {
+      createExplosion(aliens[i]);
+      app.stage.removeChild(aliens[i]);
+      aliens.splice(i, 1);
+      continue;
+    }
+    if (aliens[i].passed === true) {
       app.stage.removeChild(aliens[i]);
       aliens.splice(i, 1);
     }
