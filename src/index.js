@@ -2,9 +2,11 @@ import { Application, Sprite, Texture, Rectangle, BaseTexture, TilingSprite } fr
 import { GAME_HIEGHT, GAME_WIDTH, HERO_STEP } from './const/const';
 import { colors } from './const/colors';
 import { BACKGROUND_URL, MAIN_SPRITE_URL } from './const/url';
+import { randomPosition } from './utils/randomPosition';
 
 const keys = {};
 const bullets = [];
+const aliens = [];
 
 const app = new Application({
   width: GAME_WIDTH,
@@ -30,6 +32,10 @@ const bulletTexture = new Texture(base);
 const bulletShape = new Rectangle(328, 167, 112, 53)
 bulletTexture.frame = bulletShape;
 
+const aliensTexture = new Texture(base);
+const aliensShipShape = new Rectangle(28, 2108, 200, 136);
+aliensTexture.frame = aliensShipShape;
+
 const playerShip = Sprite.from(playerTexture);
 playerShip.width = shipsShape.width / 2;
 playerShip.height = shipsShape.height / 2;
@@ -40,13 +46,33 @@ playerShip.y = app.view.height - playerShip.height;
 
 app.stage.addChild(playerShip);
 
+const createAliens = () => {
+  const aliensShip = Sprite.from(aliensTexture);
+  aliensShip.width = aliensShipShape.width / 2;
+  aliensShip.height = aliensShipShape.height / 2;
+  aliensShip.anchor.set(0.5)
+  aliensShip.y = -100;
+  aliensShip.x = randomPosition(aliensShip.width, GAME_WIDTH - aliensShip.width);
+  aliensShip.scale.y *= -1;
+  aliensShip.dead = false;
+  app.stage.addChild(aliensShip);
+  aliens.push(aliensShip);
+  return aliensShip;
+};
+
+setInterval(() => {
+  createAliens();
+}, 2000)
+
+
 const keyDown = (e) => {
   keys[e.keyCode] = true;
 };
 const keyUp = (e) => {
   keys[e.keyCode] = false;
 };
-const fireBullet = (e) => {
+
+const playerFires = (e) => {
   if (e.keyCode === 32) {
     let bullet = createBullet();
     bullets.push(bullet);
@@ -55,7 +81,7 @@ const fireBullet = (e) => {
 
 document.body.addEventListener('keydown', keyDown);
 document.body.addEventListener('keyup', keyUp);
-document.body.addEventListener('keyup', fireBullet);
+document.body.addEventListener('keyup', playerFires);
 
 
 const gameLoop = (object) => {
@@ -67,7 +93,8 @@ const gameLoop = (object) => {
     object.position.x += HERO_STEP;
   }
   updateBullets();
-  updateBackground()
+  updateBackground();
+  updateAliensShips();
 };
 
 const createBullet = () => {
@@ -94,6 +121,12 @@ const updateBullets = () => {
       bullets.splice(i, 1);
     }
 
+  }
+};
+
+const updateAliensShips = () => {
+  for (let i = 0; i < aliens.length; i++) {
+    aliens[i].position.y += 2;
   }
 };
 
