@@ -127,6 +127,13 @@ const updateBullets = () => {
 const updateAliensShips = () => {
   for (let i = 0; i < aliens.length; i++) {
     aliens[i].position.y += 2;
+    if (aliens[i].position.y > GAME_HIEGHT + aliensShipShape.height / 2) {
+      aliens[i].dead = true;
+    }
+    if (aliens[i].dead) {
+      app.stage.removeChild(aliens[i]);
+      aliens.splice(i, 1);
+    }
   }
 };
 
