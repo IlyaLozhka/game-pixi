@@ -3,6 +3,7 @@ import { GAME_HIEGHT, GAME_WIDTH, HERO_STEP } from './const/const';
 import { colors } from './const/colors';
 import { BACKGROUND_URL, MAIN_SPRITE_URL } from './const/url';
 import { randomPosition } from './utils/randomPosition';
+import { collisionDetection } from './utils/collisionDetection';
 
 const keys = {};
 const bullets = [];
@@ -71,8 +72,8 @@ setInterval(() => {
 
 setInterval(() => {
   for (let i = 0; i < aliens.length; i++) {
-   let bullet = createAliensBullet(aliens[i]);
-   aliensBullets.push(bullet);
+    let bullet = createAliensBullet(aliens[i]);
+    aliensBullets.push(bullet);
   }
 }, 2000);
 
@@ -147,11 +148,20 @@ const updatePlayerBullets = () => {
       bullets.splice(i, 1);
     }
 
+    if (aliens.length !== 0 && bullets.length !== 0) {
+      for (let k = 0; k < aliens.length; k++) {
+        if (collisionDetection(bullets[i], aliens[k])) {
+          app.stage.removeChild(bullets[i]);
+          bullets.splice(i, 1);
+          break;
+        }
+      }
+    }
+
   }
 };
 
 const updateAliensBullets = () => {
-  console.log(aliensBullets)
   for (let i = 0; i < aliensBullets.length; i++) {
     aliensBullets[i].position.y += 5;
     if (aliensBullets[i].position.y > GAME_HIEGHT + (aliensBulletShape.height / 2)) {
@@ -162,7 +172,10 @@ const updateAliensBullets = () => {
       app.stage.removeChild(aliensBullets[i]);
       aliensBullets.splice(i, 1);
     }
-
+    if (collisionDetection(playerShip, aliensBullets[i])) {
+      app.stage.removeChild(aliensBullets[i]);
+      aliensBullets.splice(i, 1);
+    }
   }
 };
 
