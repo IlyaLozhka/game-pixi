@@ -6,7 +6,7 @@ import {
   BaseTexture,
   TilingSprite,
   Spritesheet,
-  AnimatedSprite,
+  AnimatedSprite, Container,
 } from 'pixi.js';
 import { ALIENS_LIVES_NUMBERS, GAME_HIEGHT, GAME_WIDTH, HERO_STEP, LIVES_NUMBERS } from './const/const';
 import { colors } from './const/colors';
@@ -17,6 +17,7 @@ import { explosionAtlas } from './const/explosionAtlas';
 
 const keys = {};
 const bullets = [];
+const player = [];
 const aliens = [];
 const aliensBullets = [];
 const lives = [];
@@ -45,6 +46,8 @@ const heartShape = new Rectangle(0, 0, 266, 230);
 const heartTexture = new Texture(heart);
 heartTexture.frame = heartShape;
 
+const livesContainer = new Container();
+
 const setLives = (index) => {
   const heartSprite = Sprite.from(heartTexture);
   heartSprite.anchor.set(0.5);
@@ -52,7 +55,7 @@ const setLives = (index) => {
   heartSprite.height = heartTexture.height / 4;
   heartSprite.x = heartSprite.width * index;
   heartSprite.y = GAME_HIEGHT - heartSprite.height;
-  app.stage.addChild(heartSprite);
+  livesContainer.addChild(heartSprite);
   return heartSprite;
 };
 
@@ -61,6 +64,7 @@ for (let i = 1; i < LIVES_NUMBERS + 1; i++) {
   lives.push(live);
 }
 
+app.stage.addChild(livesContainer);
 
 const playerTexture = new Texture(base);
 const shipsShape = new Rectangle(64, 63, 130, 130);
@@ -82,10 +86,10 @@ const playerShip = Sprite.from(playerTexture);
 playerShip.width = shipsShape.width / 2;
 playerShip.height = shipsShape.height / 2;
 playerShip.anchor.set(0.5);
-
 playerShip.x = (app.view.width - playerShip.width) / 2;
 playerShip.y = app.view.height - playerShip.height;
 
+player.push(playerShip);
 app.stage.addChild(playerShip);
 
 const spriteSheet = new Spritesheet(BaseTexture.from(explosionAtlas.meta.image), explosionAtlas);
@@ -138,8 +142,7 @@ document.body.addEventListener('keyup', keyUp);
 document.body.addEventListener('keyup', playerFires);
 
 
-const gameLoop = (object) => {
-  console.log(explosionsAnimations)
+const gameLoop = (object, delta) => {
   if (keys['37'] && object.position.x > object.width) {
     object.position.x -= HERO_STEP;
   }
@@ -151,6 +154,7 @@ const gameLoop = (object) => {
   updateBackground();
   updateAliensShips();
   updateAliensBullets();
+  updatePlayerShip();
 };
 
 const createAliensBullet = (aliensShip) => {
@@ -189,7 +193,7 @@ const createExplosion = (object) => {
   explosionAnimation.onComplete = () => {
     app.stage.removeChild(explosionAnimation);
     explosionsAnimations.pop();
-  }
+  };
   app.stage.addChild(explosionAnimation);
   explosionsAnimations.push(explosionAnimation);
 };
@@ -234,6 +238,8 @@ const updateAliensBullets = () => {
     if (collisionDetection(playerShip, aliensBullets[i])) {
       app.stage.removeChild(aliensBullets[i]);
       aliensBullets.splice(i, 1);
+      livesContainer.removeChild(lives[lives.length - 1]);
+      lives.splice(lives.length - 1, 1);
     }
   }
 };
@@ -262,8 +268,18 @@ const updateAliensShips = () => {
   }
 };
 
+const updatePlayerShip = () => {
+ for (let i = 0; i < player.length; i++) {
+   if (!lives.length) {
+     createExplosion(playerShip);
+     app.stage.removeChild(playerShip);
+     player.splice(player[i], 1);
+   }
+ }
+};
+
 const updateBackground = () => {
   backgroundSprite.tilePosition.y += 1;
 };
 
-app.ticker.add(() => gameLoop(playerShip));
+app.ticker.add((delta) => gameLoop(playerShip));
