@@ -31,7 +31,7 @@ const app = new Application({
 
 document.getElementById('root').appendChild(app.view);
 
-const base = BaseTexture.from(MAIN_SPRITE_URL);// x start 328 y start 168 x end 440 y end 220  112/52
+const base = BaseTexture.from(MAIN_SPRITE_URL);
 base.setSize(512, 3328);
 
 const background = BaseTexture.from(BACKGROUND_URL);
@@ -93,7 +93,7 @@ player.push(playerShip);
 app.stage.addChild(playerShip);
 
 const spriteSheet = new Spritesheet(BaseTexture.from(explosionAtlas.meta.image), explosionAtlas);
-spriteSheet.parse().then((data) => console.log('loaded', data));
+spriteSheet.parse().then((data) => console.log('loaded spriteSheet!', data));
 
 const createAliens = () => {
   const aliensShip = Sprite.from(aliensTexture);
@@ -253,9 +253,6 @@ const updateAliensShips = () => {
     }
     if (aliens[i].lives === 0) {
       aliens[i].dead = true;
-      continue;
-    }
-    if (aliens[i].dead) {
       createExplosion(aliens[i]);
       app.stage.removeChild(aliens[i]);
       aliens.splice(i, 1);
@@ -269,13 +266,13 @@ const updateAliensShips = () => {
 };
 
 const updatePlayerShip = () => {
- for (let i = 0; i < player.length; i++) {
-   if (!lives.length) {
-     createExplosion(playerShip);
-     app.stage.removeChild(playerShip);
-     player.splice(player[i], 1);
-   }
- }
+  for (let i = 0; i < player.length; i++) {
+    if (!lives.length) {
+      createExplosion(playerShip);
+      app.stage.removeChild(playerShip);
+      player.splice(player[i], 1);
+    }
+  }
 };
 
 const updateBackground = () => {
