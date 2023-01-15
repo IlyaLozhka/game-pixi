@@ -2,7 +2,7 @@
   "name": "parcel-project-template",
   "version": "2.0.0",
   "description": "",
-  "homepage": "https://ilyalozhka.github.io/game-pixi/",
+  "homepage": "https://IlyaLozhka.github.io/game-pixi/",
   "scripts": {
     "start": "parcel src/*.html",
     "build": "parcel build src/*.html --public-url /parcel-template/"
@@ -15,7 +15,7 @@
   "author": "Illia Lozhka <lozhka59@gmail.com>",
   "license": "ISC",
   "bugs": {
-    "url": "https://ilyalozhka.github.io/game-pixi/issues"
+    "url": "https://IlyaLozhka.github.io/game-pixi/issues"
   },
   "dependencies": {
     "modern-normalize": "^1.1.0",
