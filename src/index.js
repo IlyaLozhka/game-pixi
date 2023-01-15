@@ -7,7 +7,7 @@ import {
   TilingSprite,
   Spritesheet,
   AnimatedSprite, Container,
-} from 'pixi.js';
+} from './../node_modules/pixi.js';
 import { ALIENS_LIVES_NUMBERS, GAME_HIEGHT, GAME_WIDTH, HERO_STEP, LIVES_NUMBERS } from './const/const';
 import { colors } from './const/colors';
 import { BACKGROUND_URL, HEARTS_URL, MAIN_SPRITE_URL } from './const/url';
