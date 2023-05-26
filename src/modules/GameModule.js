@@ -1,4 +1,4 @@
-import { Container, Text, BaseTexture, TilingSprite, Texture, Sprite, Rectangle } from 'pixi.js';
+import { Container, Text, BaseTexture, TilingSprite, Texture, Sprite, Rectangle, Graphics } from 'pixi.js';
 import PlayerShip from '../components/PlayerShip';
 import { GAME_WIDTH, GAME_HEIGHT, HERO_STEP, LIVES_NUMBERS } from '../const/const';
 import { colors } from '../const/colors';
@@ -7,6 +7,8 @@ import { BACKGROUND_URL, HEARTS_URL, MAIN_SPRITE_URL } from '../const/url';
 import Keyboard from '../components/Keyboard';
 import AliensShip from '../components/AliensShip';
 import Explosion from '../components/Explosion';
+import Score from '../components/Score';
+import * as createjs from '@createjs/tweenjs'
 
 class GameModule {
   constructor(app) {
@@ -82,6 +84,11 @@ class GameModule {
   }
 
   initPlayerElements() {
+    this.initPlayerLives();
+
+    this.score = new Score();
+  }
+  initPlayerLives() {
     const heart = BaseTexture.from(HEARTS_URL);
     heart.setSize(852, 238);
     const heartShape = new Rectangle(0, 0, 266, 230);
@@ -98,7 +105,6 @@ class GameModule {
       this.lives.push(life);
       this.livesContainer.addChild(life);
     }
-
     this.livesContainer.position.set(GAME_WIDTH - this.livesContainer.width, GAME_HEIGHT - this.livesContainer.height)
     this.backgroundLayer.addChild(this.livesContainer);
   }
@@ -157,6 +163,7 @@ class GameModule {
         this.mainLayer.removeChild(alien.sprite);
         this.aliens.splice(index, 1);
         this.createExplosion(alien.sprite.x, alien.sprite.y);
+        alien.dead && !this.player.dead && this.score.updateScore();
         return;
       }
       // Оновлення позиції
@@ -197,31 +204,21 @@ class GameModule {
 
   updateExplosions() {
     // Оновлення анімацій вибухів
-
-    // Оновлення кожної анімації вибуху
     this.explosionsAnimations.forEach(animation => {
       if (!animation.playing) {
-        // Якщо анімація не грає, то пропускаємо оновлення
         return;
       }
-
-      // Оновлення кадру анімації
       animation.update();
 
-      // Перевірка, чи закінчилася анімація вибуху
       if (animation.currentFrame === animation.totalFrames - 1) {
         animation.stop();
         animation.sprite.visible = false;
       }
     });
-
-    // Видалення закінчених анімацій вибуху
     this.explosionsAnimations = this.explosionsAnimations.filter(animation => animation.playing);
   }
 
   detectCollisions() {
-    // Виявлення зіткнень та обробка результатів
-
     this.bullets.forEach(bullet => {
       this.aliens.forEach(alien => {
         if (!bullet.dead && !alien.dead && collisionDetection(bullet, alien.sprite)) {
@@ -235,7 +232,6 @@ class GameModule {
       });
     });
 
-    // Перевірка зіткнень між кулями прибульців та гравцем
     this.aliensBullets.forEach(bullet => {
       if (!bullet.dead && !this.player.dead && collisionDetection(bullet, this.player.sprite)) {
         bullet.dead = true;
@@ -262,7 +258,7 @@ class GameModule {
   checkGameOver(){
     if (this.player.dead) {
       if (this.lives.length === 0) {
-        this.endGame();
+
       } else {
         setTimeout(() => {
           this.player.dead = false;
@@ -292,18 +288,29 @@ class GameModule {
 
   endGame() {
     this.stage.removeChildren();
-    this.app.stage.removeChild(this.stage);
+    this.mainLayer.removeChild(this.score.scoreText);
     this.app.ticker.remove(this.gameLoop.bind(this));
 
-    const gameOverText = new Text('Game Over', {
+    const gameOverText = new Text(`Game Over\nYou score: ${this.score.scoreValue}`, {
       fontFamily: 'Arial',
       fontSize: 48,
       fill: colors.white,
       align: 'center',
     });
+    gameOverText.alpha = 0;
     gameOverText.x = GAME_WIDTH / 2 - gameOverText.width / 2;
     gameOverText.y = GAME_HEIGHT / 2 - gameOverText.height / 2;
     this.app.stage.addChild(gameOverText);
+
+    const blackScreen = new Graphics();
+    blackScreen.beginFill(0x000000);
+    blackScreen.drawRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+    blackScreen.alpha = 0; // Initially set alpha to 0 (transparent)
+    this.app.stage.addChild(blackScreen);
+    Promise.resolve()
+      .then(() => createjs.Tween.get(blackScreen).to({alpha: 1}, 2000))
+      .then(() => createjs.Tween.get(gameOverText).to({alpha: 1}, 2000));
+
   }
 }
 
